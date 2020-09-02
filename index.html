@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <!--script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js"></script-->
+    <style>
+      #cipher-container {
+        position: relative;
+        margin: 0 auto;
+        width: 1px;
+      }
+
+      .cipher-decor {
+        position: absolute;
+        width: 24rem;
+        height: 24rem;
+        top: 0;
+        left: -11rem;
+        border-radius: 50%;
+        border: thin solid black;
+      }
+
+      .cipher-inner-decor {
+        position: absolute;
+        width: 19rem;
+        height: 19rem;
+        top: 2.5rem;
+        left: -8.5rem;
+        border-radius: 50%;
+        border: thin solid black;
+      }
+
+      .cipher-letter, .key-letter {
+        font: 2rem MonoSpace;
+        position: absolute;
+        width: 2rem;
+        left: 0;
+        transform-origin: bottom center;
+        text-align: center;
+      }
+
+      .cipher-letter {
+        height: 12rem;
+        top: 0;
+      }
+
+      .key-letter {
+        height: 9rem;
+        top: 3rem;
+      }
+    </style>
+    <script>
+      var cipher = [
+        "abcdefghijklmnopqrstuvwxyz",
+        "abcdefghijklmnopqrstuvwxyz",
+      ];
+
+      var spinFactor = 0.1;
+      var snapFactor = 0.5;
+      var snapDebounce = 100;
+
+      function collectionToArray(collection) {
+        var rval = new Array(collection.length);
+
+        for (var i = 0; i < collection.length; i += 1) {
+          rval[i] = collection[i];
+        }
+
+        return rval;
+      }
+
+      function debounce(f, ms) {
+        var timeout = null;
+        return function() {
+          if (timeout) {
+            clearTimeout(timeout);
+          }
+          timeout = setTimeout(function() {
+            timeout = null;
+            f();
+          }, ms);
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", function() {
+        var container = document.getElementById("cipher-container");
+
+        var offset = 0;
+
+        var snap = debounce(function() {
+          var keys = collectionToArray(container.children).filter(function(e) {
+            return e.getAttribute("class") === "key-letter";
+          });
+
+          var unit = (1 / keys.length) * 360;
+          var rot = offset / unit;
+          var diff = rot - Math.floor(rot);
+
+          console.log(offset);
+          console.log(rot);
+          console.log(unit);
+          if (diff < snapFactor) {
+            offset = Math.floor(rot) * unit;
+            console.log(offset);
+          } else if ((1 - diff) < snapFactor) {
+            offset = Math.ceil(rot) * unit;
+            console.log(offset);
+          } else {
+            console.log("---");
+            return;
+          }
+
+          for (var i = 0; i < keys.length; i +=1 ) {
+            keys[i].style.transform = "rotate(" + (((i / keys.length) * 360) + offset) + "deg)";
+          }
+        }, snapDebounce);
+
+        container.addEventListener("wheel", function(event) {
+          event.preventDefault();
+
+          offset += event.deltaY * -spinFactor;
+          while (offset < 0) {
+            offset += 360;
+          }
+          while (offset >= 360) {
+            offset -= 360;
+          }
+
+          var keys = collectionToArray(container.children).filter(function(e) {
+            return e.getAttribute("class") === "key-letter";
+          });
+
+          for (var i = 0; i < keys.length; i +=1 ) {
+            keys[i].style.transform = "rotate(" + (((i / keys.length) * 360) + offset) + "deg)";
+          }
+
+          snap();
+        });
+
+        for (var i = 0; i < cipher[0].length; i +=1 ) {
+          var letter = document.createElement("span");
+          letter.innerHTML = "<span class=\"inner-letter\">" + cipher[0][i].toUpperCase() + "</span>";
+          letter.setAttribute("class", "cipher-letter");
+
+          letter.style.transform = "rotate(" + ((i / cipher[0].length) * 360) + "deg)";
+          container.appendChild(letter);
+        }
+
+        for (var i = 0; i < cipher[1].length; i +=1 ) {
+          var letter = document.createElement("span");
+          letter.innerHTML = "<span class=\"inner-letter\">" + cipher[1][i].toUpperCase() + "</span>";
+          letter.setAttribute("class", "key-letter");
+
+          letter.style.transform = "rotate(" + ((i / cipher[0].length) * 360) + "deg)";
+          container.appendChild(letter);
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div id="cipher-container">
+      <div class="cipher-decor"></div>
+      <div class="cipher-inner-decor"></div>
+    </div>
+  </body>
+</html>
