@@ -52,8 +52,23 @@
     </style>
     <script>
       var cipher = [
-        "abcdefghijklmnopqrstuvwxyz",
-        "abcdefghijklmnopqrstuvwxyz",
+        //"abcdefghijklmnopqrstuvwxyz",
+        //"abcdefghijklmnopqrstuvwxyz",
+        [
+          "---",
+          ".----",
+          "..---",
+          "...--",
+          "....-",
+          ".....",
+          "-----",
+          "-....",
+          "--...",
+          "---..",
+          "----.",
+          "--",
+        ].join("  "),
+        "0123456789",
       ];
 
       var spinFactor = 0.1;
@@ -152,7 +167,7 @@
           letter.innerHTML = "<span class=\"inner-letter\">" + cipher[1][i].toUpperCase() + "</span>";
           letter.setAttribute("class", "key-letter");
 
-          letter.style.transform = "rotate(" + ((i / cipher[0].length) * 360) + "deg)";
+          letter.style.transform = "rotate(" + ((i / cipher[1].length) * 360) + "deg)";
           container.appendChild(letter);
         }
       });
