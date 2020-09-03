@@ -111,17 +111,11 @@
           var rot = offset / unit;
           var diff = rot - Math.floor(rot);
 
-          console.log(offset);
-          console.log(rot);
-          console.log(unit);
           if (diff < snapFactor) {
             offset = Math.floor(rot) * unit;
-            console.log(offset);
           } else if ((1 - diff) < snapFactor) {
             offset = Math.ceil(rot) * unit;
-            console.log(offset);
           } else {
-            console.log("---");
             return;
           }
 
@@ -149,6 +143,64 @@
             keys[i].style.transform = "rotate(" + (((i / keys.length) * 360) + offset) + "deg)";
           }
 
+          snap();
+        });
+
+        let touchStart = [ -1, -1, 0 ];
+
+        container.addEventListener("touchstart", function(event) {
+          if (event.targetTouches.length !== 1) {
+            return;
+          }
+
+          event.preventDefault();
+          var touch = event.targetTouches[0];
+
+          touchStart = [ touch.clientX, touch.clientY, offset ];
+        });
+
+        container.addEventListener("touchmove", function(event) {
+          if (event.targetTouches.length !== 1) {
+            return;
+          }
+
+          event.preventDefault();
+          var touch = event.targetTouches[0];
+
+          var touchAt = [ touch.clientX, touch.clientY ];
+          var bounds = collectionToArray(container.children).map(function(e) {
+            return e.getBoundingClientRect();
+          }).reduce(function(m,v) {
+            return {
+              top: Math.min(m.top, v.top),
+              left: Math.min(m.left, v.left),
+              bottom: Math.max(m.bottom, v.bottom),
+              right: Math.max(m.right, v.right),
+            };
+          });
+          var center = [
+            bounds.left + ((bounds.right - bounds.left) / 2),
+            bounds.top + ((bounds.bottom - bounds.top) / 2),
+          ];
+          var startAtan = Math.atan2(touchStart[1] - center[1], touchStart[0] - center[0]);
+          var touchAtan = Math.atan2(touchAt[1] - center[1], touchAt[0] - center[0]);
+          offset = touchStart[2] + ((touchAtan - startAtan) * 180 / Math.PI);
+
+          var keys = collectionToArray(container.children).filter(function(e) {
+            return e.getAttribute("class") === "key-letter";
+          });
+
+          for (var i = 0; i < keys.length; i +=1 ) {
+            keys[i].style.transform = "rotate(" + (((i / keys.length) * 360) + offset) + "deg)";
+          }
+        });
+
+        container.addEventListener("touchend", function(event) {
+          if (event.targetTouches.length > 0) {
+            return;
+          }
+
+          event.preventDefault();
           snap();
         });
 
